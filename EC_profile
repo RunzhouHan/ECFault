@@ -1,0 +1,2 @@
+# Jerasure reed_sol_van (k,m)=(5+2) 
+ceph osd erasure-code-profile set Jerasure-5-2-4MB k=5 m=2 crush-failure-domain=osd plugin=jerasure technique=reed_sol_van crush-device-class=ssd stripe_unit=4096K

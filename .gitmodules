@@ -1,0 +1,6 @@
+[submodule "configshell-fb"]
+	path = configshell-fb
+	url = https://github.com/open-iscsi/configshell-fb.git
+[submodule "nvmetcli"]
+	path = nvmetcli
+	url = https://github.com/JunxiongGuan/nvmetcli.git
