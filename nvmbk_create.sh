@@ -17,6 +17,8 @@ addr_traddr="192.168.1.7" # target host ip addr
 it=0
 
 
+mkdir -p ECFAULT_HOME/img
+
 while [ $it -lt $count ]
 do
 
