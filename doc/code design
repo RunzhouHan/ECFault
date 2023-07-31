@@ -1,0 +1,2 @@
+# Dependencies
+rpc library: grpcio-tools-1.56.0 protocol buffers v4.23.4

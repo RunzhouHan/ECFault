@@ -1,0 +1,11 @@
+[write-4M]
+description="write test with block size of 4M"
+numjobs=4
+ioengine=rados
+clientname=root
+pool=ecpool
+iodepth=32
+runtime=120
+rw=write
+bs=1M
+size=40G

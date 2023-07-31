@@ -1,0 +1,8 @@
+[write-4M]
+description="write test with block size of 4M"
+numjobs=1
+ioengine=libaio
+iodepth=32
+rw=write
+bs=8M
+size=4G

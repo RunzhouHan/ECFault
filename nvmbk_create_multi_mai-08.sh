@@ -14,33 +14,35 @@ ECFAULT_HOME=$(cd -P -- `dirname $me`/ && pwd -P)
 
 
 # Configuration # 
-dev=sda 								# physical device name
-target_per_dev=5 					# number of OSDs
-target_sz=1024							# OSD size
+dev=(sda sdb sdc sdd sde sdf sdg sdh sdj)								# physical device name
+dev_count=9
+target_per_dev=2 					# number of OSDs
+target_sz=10240							# OSD size
 conn="tcp" 							# connection type
-addr_traddr="192.168.1.7" 						# target host ip addr
+addr_traddr="10.24.86.175" 						# target host ip addr
 loop_idx=20 						# start from /dev/loop20, modify per your loop device availability
 
 
 mkdir -p $ECFAULT_HOME/img
 
-# it=0
-# while [ $it -lt $dev_count ]
-# do
-# 	mkdir -p $ECFAULT_HOME/img/${$dev[$it]}
-# done
-
+curr=0
 it=0
-while [ $it -lt $target_per_dev ]
+
+while [ $curr -lt $dev_count ]
+do
+ 	#mkdir -p $ECFAULT_HOME/img/${dev[curr]}
+	#mount /dev/${dev[curr]} $ECFAULT_HOME/img/${dev[curr]}
+
+
+	curr_count=0
+	while [ $curr_count -lt $target_per_dev ]
 do
 
 	pv_name=`echo "osd.pv.$it"`
-	# dd if=/dev/zero of=$ECFAULT_HOME/img/${$dev[$it]}/$pv_name bs=1M target_per_dev=$target_sz
-	dd if=/dev/zero of=$ECFAULT_HOME/img/$dev/$pv_name bs=1M count=$target_sz
-	sleep 2
+	dd if=/dev/zero of=$ECFAULT_HOME/img/${dev[curr]}/$pv_name bs=1M count=$target_sz
+	#sleep 2
 	let "curr=$it + $loop_idx" 
-	# losetup /dev/loop$(($it+$loop_idx)) $ECFAULT_HOME/img/${$dev[it]}/$pv_name
-	losetup /dev/loop$(($it+$loop_idx)) $ECFAULT_HOME/img/$dev/$pv_name
+	losetup /dev/loop$(($it+$loop_idx)) $ECFAULT_HOME/img/${dev[curr]}/$pv_name
 	sleep 1
 
 	mkdir -p /sys/kernel/config/nvmet/subsystems/nvmet-$it \
@@ -62,7 +64,12 @@ do
 	$ECFAULT_HOME/symlink.py /sys/kernel/config/nvmet/subsystems/nvmet-$it /sys/kernel/config/nvmet/ports/1/subsystems/nvmet-$it
 	sleep 1
 
-	let  "it+=1" 
+	let  "it+=1"
+       	let  "curr_count+=1"	
+
+done
+
+let "curr+=1"
 
 done
 sync

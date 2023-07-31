@@ -1,0 +1,127 @@
+# Clean up a broken cluster
+## delete pool
+ceph tell mon.\* injectargs '--mon-allow-pool-delete=true'
+ceph osd pool delete ecpool ecpool --yes-i-really-really-mean-it
+
+## delete failed daemons
+sudo ceph orch daemon rm osd.1 --force
+
+## delete ceph osd
+ceph osd out <osd_id>
+ceph osd down <osd_id>
+systemctl stop ceph-osd@<id>
+/etc/init.d/ceph stop osd.<id>
+ceph osd purge --yes-i-really-mean-it {osd_id} 
+
+# Wipe virtual disk (remove ceph volumn)
+lvremove /dev/<lv>
+wipefs -a /dev/nvme*
+or
+ceph-volume lvm zap --destroy --osd-id OSD_ID
+ceph-volume lvm zap --destroy <dev_path, e.g.: /dev/ceph-925f4c39-75bc-414a-8bba-92bfb091c6c1/osd-block-9b417a5f-ce7f-4d1b-a18d-c58cca3a3d9e>
+ceph-volume lvm zap --destroy --osd-fsid OSD_FSID
+
+## Refresh ceph device monitor
+ceph orch device ls --refresh
+
+# NVMe-oF targets are not visible immediately to 'ceph orch ls device', but you can still add it as an OSD (no recommended)
+ceph orch daemon add osd ceph-0:/dev/nvme3n1
+
+# Ceph pg operations
+## list pgs and get pg-osd map
+ceph pg ls
+ceph pg map <id>
+
+# RADOS operations
+## To view cluster utilization:
+rados df
+## List objects in pool
+rados -p ecpool ls
+## Insert object to pool
+rados -p ecpool put <obj_name> <your_file>
+## Read object content
+rados -p ecpool get <obj_name> -
+
+# Force Ceph to detect OSD failure and do recovery
+# Have Ceph do recovery
+ceph osd pool scrub ecpool
+ceph osd repair all
+ceph osd pool repair ecpool && ceph osd pool force-recovery ecpool && rados -p ecpool ls
+# you can also do pg scrub
+ceph pg scrub <pg_num>
+ceph -s
+## Then you can check if lost data is recoverable, but first clear cache (not recommended)
+free && sync && echo 3 > /proc/sys/vm/drop_caches && free
+rados -p ecpool get <obj_name> -
+
+## print client I/Os & recovery bandwidth
+ceph osd pool stats
+
+# List service by name
+systemctl --type=service --state=running  | grep ceph
+
+# remove _no_schedule label from host
+ceph orch host label rm <host> _no_schedule
+
+
+# replace OSD
+https://docs.ceph.com/en/latest/rados/operations/add-or-rm-osds/
+
+# refer to this if Removing hosts using ceph orchestrator does not remove host
+https://access.redhat.com/solutions/6969658
+
+
+# SPECIFYING EXPECTED POOL SIZE
+ceph osd pool set mypool target_size_bytes 100T
+
+
+# delete a ceph cluster
+cephadm rm-cluster --force --fsid 521d7c02-caad-11ed-b4ad-610ba1139412
+
+
+# bootstrap cluster
+cephadm bootstrap --mon-ip 10.24.86.175
+
+
+# check osd-host mapping and weight
+ceph osd tree
+
+
+# redefine OSD type to create pool on specific type of OSDs (for isolating metadata I/O and data I/O)
+https://forum.proxmox.com/threads/pve-ceph-rules-for-hdd-pools-of-different-sizes.115437/
+
+ceph osd crush rm-device-class osd.20
+ceph osd crush set-device-class <CLASS> osd.20 # CLASS can be a own defined type
+ceph osd crush rule create-replicated <rule name> default host <CLASS> 
+ceph osd pool create meta replicated meta-rule
+ceph pg ls-by-pool meta
+
+
+# create ECed CephFS
+ceph osd pool set ecpool allow_ec_overwrites true
+ceph fs new cephfs meta ecpool --force
+ceph orch apply mds cephfs --placement="1 mai-08"
+ceph fs stats
+## mount client
+mkdir ./cephfs
+ceph fs authorize cephfs client.root / rw | tee /etc/ceph/ceph.client.root.keyring
+chmod 600 /etc/ceph/ceph.client.root.keyring
+mount -t ceph root@8d0f42b6-ce66-11ed-b4ad-610ba1139412.cephfs=/ ./cephfs
+
+# remove CephFS
+ceph fs fail cephfs
+ceph fs rm cephfs --yes-i-really-mean-it
+ceph fs new cephfs meta ecpool
+
+# create ECed rbd, use the created replicated metadata pool
+ceph osd pool create rbd 256 erasure Jerasure-7-2-4MB
+rbd create --size 100G --data-pool rbd meta/img
+rbd feature disable img exclusive-lock object-map fast-diff deep-flatten -p meta
+rbd map img -p meta
+
+
+# remove rbd
+rbd device unmap rbd/img
+rbd remove img -p meta
+
+

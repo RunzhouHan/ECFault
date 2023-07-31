@@ -1,0 +1,53 @@
+# EC profiles operations
+
+## Jerasure (n,k)=(12,8) 
+ceph osd erasure-code-profile set Jerasure-12-8-4MB k=8 m=4 crush-failure-domain=host plugin=jerasure technique=reed_sol_van crush-device-class=ssd stripe_unit=4096K
+
+## Jerasure (n,k)=(16,12) 
+ceph osd erasure-code-profile set Jerasure-16-12-4MB k=12 m=4 crush-failure-domain=host plugin=jerasure technique=reed_sol_van crush-device-class=ssd stripe_unit=4096K
+
+## Clay (n,k,d)=(12,8,11) 
+ceph osd erasure-code-profile set Clay-12-8-11-4MB k=8 m=4 d=11 crush-failure-domain=host plugin=clay technique=reed_sol_van crush-device-class=ssd stripe_unit=4096K
+
+## Clay (n,k,d)=(16,12,15) 
+ceph osd erasure-code-profile set Clay-16-12-15-4MB k=12 m=4 d=15 crush-failure-domain=host plugin=clay technique=reed_sol_van crush-device-class=ssd stripe_unit=4096K
+
+## LRC (n,k,l)=(14,8,4) 
+ceph osd erasure-code-profile set LRC-14-8-4-4MB k=8 m=4 l=4 crush-failure-domain=host plugin=clay technique=reed_sol_van crush-device-class=ssd stripe_unit=4096K
+
+## LRC (n,k,l)=(18,12,6) 
+ceph osd erasure-code-profile set LRC-16-12-15-4MB k=12 m=4 l=6 crush-failure-domain=host plugin=clay technique=reed_sol_van crush-device-class=ssd stripe_unit=4096K
+
+## Create ecpool with 256 pgs based on EC profile
+ceph osd pool create ecpool 256 erasure <Jerasure-7-2-4MB>
+
+
+
+# RADOS workload operations
+
+## To view cluster utilization:
+rados df
+
+## List objects in pool
+rados -p ecpool ls
+
+## Insert object to pool
+rados -p ecpool put <obj_name> <your_file>
+
+## Read object content
+rados -p ecpool get <obj_name> -
+
+
+
+
+# Force Ceph to detect OSD failure and do recovery
+# Have Ceph do recovery
+ceph osd pool scrub ecpool
+ceph osd repair all
+ceph osd pool repair ecpool && ceph osd pool force-recovery ecpool && rados -p ecpool ls
+# you can also do pg scrub
+ceph pg scrub <pg_num>
+ceph -s
+## Then you can check if lost data is recoverable, but first clear cache (not recommended)
+free && sync && echo 3 > /proc/sys/vm/drop_caches && free
+rados -p ecpool get <obj_name> -

@@ -1,0 +1,188 @@
+usage: rados [options] [commands]
+POOL COMMANDS
+   lspools                          list pools
+   cppool <pool-name> <dest-pool>   copy content of a pool
+   purge <pool-name> --yes-i-really-really-mean-it
+                                    remove all objects from pool <pool-name> without removing it
+   df                               show per-pool and total usage
+   ls                               list objects in pool
+
+
+POOL SNAP COMMANDS
+   lssnap                           list snaps
+   mksnap <snap-name>               create snap <snap-name>
+   rmsnap <snap-name>               remove snap <snap-name>
+
+OBJECT COMMANDS
+   get <obj-name> <outfile>         fetch object
+   put <obj-name> <infile> [--offset offset]
+                                    write object with start offset (default:0)
+   append <obj-name> <infile>       append object
+   truncate <obj-name> length       truncate object
+   create <obj-name>                create object
+   rm <obj-name> ... [--force-full] remove object(s), --force-full forces remove when cluster is full
+   cp <obj-name> [target-obj]       copy object
+   listxattr <obj-name>             list attrs of this object
+   getxattr <obj-name> <attr>       get the <attr> attribute of this object
+   setxattr <obj-name> attr val
+   rmxattr <obj-name> attr
+   stat <obj-name>                  stat the named object
+   stat2 <obj-name>                 stat2 the named object (with high precision time)
+   touch <obj-name> [timestamp]     change the named object modification time
+   mapext <obj-name>
+   rollback <obj-name> <snap-name>  roll back object to snap <snap-name>
+
+   listsnaps <obj-name>             list the snapshots of this object
+   bench <seconds> write|seq|rand [-t concurrent_operations] [--no-cleanup] [--run-name run_name] [--no-hints] [--reuse-bench]
+                                    default is 16 concurrent IOs and 4 MB ops
+                                    default is to clean up after write benchmark
+                                    default run-name is 'benchmark_last_metadata'
+   cleanup [--run-name run_name] [--prefix prefix]
+                                    clean up a previous benchmark operation
+                                    default run-name is 'benchmark_last_metadata'
+   load-gen [options]               generate load on the cluster
+   listomapkeys <obj-name>          list the keys in the object map
+   listomapvals <obj-name>          list the keys and vals in the object map 
+   getomapval <obj-name> <key> [file] show the value for the specified key
+                                    in the object's object map
+   setomapval <obj-name> <key> <val | --input-file file>
+   rmomapkey <obj-name> <key>       Remove key from the object map of <obj-name>
+   clearomap <obj-name> [obj-name2 obj-name3...] clear all the omap keys for the specified objects
+   getomapheader <obj-name> [file]  Dump the hexadecimal value of the object map header of <obj-name>
+   setomapheader <obj-name> <val>   Set the value of the object map header of <obj-name>
+   watch <obj-name>                 add watcher on this object
+   notify <obj-name> <message>      notify watcher of this object with message
+   listwatchers <obj-name>          list the watchers of this object
+   set-alloc-hint <obj-name> <expected-object-size> <expected-write-size>
+                                    set allocation hint for an object
+   set-redirect <object A> --target-pool <caspool> <target object A> [--with-reference]
+                                    set redirect target
+   set-chunk <object A> <offset> <length> --target-pool <caspool> <target object A> <taget-offset> [--with-reference]
+                                    convert an object to chunked object
+   tier-promote <obj-name>	     promote the object to the base tier
+   unset-manifest <obj-name>	     unset redirect or chunked object
+   tier-flush <obj-name>	     flush the chunked object
+   tier-evict <obj-name>	     evict the chunked object
+
+IMPORT AND EXPORT
+   export [filename]
+       Serialize pool contents to a file or standard out.
+   import [--dry-run] [--no-overwrite] < filename | - >
+       Load pool contents from a file or standard in
+
+ADVISORY LOCKS
+   lock list <obj-name>
+       List all advisory locks on an object
+   lock get <obj-name> <lock-name> [--lock-cookie locker-cookie] [--lock-tag locker-tag] [--lock-description locker-desc] [--lock-duration locker-dur] [--lock-type locker-type]
+       Try to acquire a lock
+   lock break <obj-name> <lock-name> <locker-name> [--lock-cookie locker-cookie]
+       Try to break a lock acquired by another client
+   lock info <obj-name> <lock-name>
+       Show lock information
+   options:
+       --lock-tag                   Lock tag, all locks operation should use
+                                    the same tag
+       --lock-cookie                Locker cookie
+       --lock-description           Description of lock
+       --lock-duration              Lock duration (in seconds)
+       --lock-type                  Lock type (shared, exclusive)
+
+SCRUB AND REPAIR:
+   list-inconsistent-pg <pool>      list inconsistent PGs in given pool
+   list-inconsistent-obj <pgid>     list inconsistent objects in given PG
+   list-inconsistent-snapset <pgid> list inconsistent snapsets in the given PG
+
+CACHE POOLS: (for testing/development only)
+   cache-flush <obj-name>           flush cache pool object (blocking)
+   cache-try-flush <obj-name>       flush cache pool object (non-blocking)
+   cache-evict <obj-name>           evict cache pool object
+   cache-flush-evict-all            flush+evict all objects
+   cache-try-flush-evict-all        try-flush+evict all objects
+
+GLOBAL OPTIONS:
+   --object-locator object_locator
+        set object_locator for operation
+   -p pool
+   --pool=pool
+        select given pool by name
+   --target-pool=pool
+        select target pool by name
+   --pgid PG id
+        select given PG id
+   -f [--format plain|json|json-pretty]
+   --format=[--format plain|json|json-pretty]
+   -b op_size
+        set the block size for put/get ops and for write benchmarking
+   -O object_size
+        set the object size for put/get ops and for write benchmarking
+   --max-objects
+        set the max number of objects for write benchmarking
+   --obj-name-file file
+        use the content of the specified file in place of <obj-name>
+   -s name
+   --snap name
+        select given snap name for (read) IO
+   --input-file file
+        use the content of the specified file in place of <val>
+   --create
+        create the pool or directory that was specified
+   -N namespace
+   --namespace=namespace
+        specify the namespace to use for the object
+   --all
+        Use with ls to list objects in all namespaces
+        Put in CEPH_ARGS environment variable to make this the default
+   --default
+        Use with ls to list objects in default namespace
+        Takes precedence over --all in case --all is in environment
+   --target-locator
+        Use with cp to specify the locator of the new object
+   --target-nspace
+        Use with cp to specify the namespace of the new object
+   --striper
+        Use radostriper interface rather than pure rados
+        Available for stat, get, put, truncate, rm, ls and 
+        all xattr related operations
+
+BENCH OPTIONS:
+   -t N
+   --concurrent-ios=N
+        Set number of concurrent I/O operations
+   --show-time
+        prefix output with date/time
+   --no-verify
+        do not verify contents of read objects
+   --write-object
+        write contents to the objects
+   --write-omap
+        write contents to the omap
+   --write-xattr
+        write contents to the extended attributes
+
+LOAD GEN OPTIONS:
+   --num-objects                    total number of objects
+   --min-object-size                min object size
+   --max-object-size                max object size
+   --min-op-len                     min io size of operations
+   --max-op-len                     max io size of operations
+   --max-ops                        max number of operations
+   --max-backlog                    max backlog size
+   --read-percent                   percent of operations that are read
+   --target-throughput              target throughput (in bytes)
+   --run-length                     total time (in seconds)
+   --offset-align                   at what boundary to align random op offsets
+
+CACHE POOLS OPTIONS:
+   --with-clones                    include clones when doing flush or evict
+
+OMAP OPTIONS:
+    --omap-key-file file            read the omap key from a file
+
+GENERIC OPTIONS:
+  --conf/-c FILE    read configuration from the given configuration file
+  --id ID           set ID portion of my name
+  --name/-n TYPE.ID set name
+  --cluster NAME    set cluster name (default: ceph)
+  --setuser USER    set uid to user or uid (and gid to user's gid)
+  --setgroup GROUP  set gid to group or gid
+  --version         show version and quit

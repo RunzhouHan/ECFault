@@ -1,0 +1,72 @@
+syntax = "proto3";
+
+package ecfault;
+
+
+/* virtual nvme device management */
+
+service RemoteNVMeDev {
+  rpc get_avail_dev (Placeholder) returns (DevInfo) {} 
+  rpc nvme_dev_create (VirtDevInfo) returns (Stat) {}
+  rpc nvme_dev_create_multiple (VirtDevInfoMultiple) returns (Stat) {}
+  rpc nvme_dev_remove (Placeholder) returns (Stat) {}
+} 
+
+message DevInfo {
+  repeated string dev_info = 1;
+}
+
+message VirtDevInfo {
+  optional string dev_path = 1;
+  optional string bk_path = 2;
+  int32 bk_per_dev = 3;
+  int32 bk_sz = 4;
+}
+
+message VirtDevInfoMultiple {
+  repeated string dev_path = 1;
+  optional string bk_path = 2;
+  int32 bk_per_dev = 3;
+  int32 bk_sz = 4;
+}
+
+message Stat {
+  int32 stat = 1;
+}
+
+message Placeholder {
+  int32 op = 1;
+}
+
+
+/* query stats */
+
+service StatQuery {
+  rpc system_stats_query (Placeholder) returns (SystemStats) {}
+  rpc node_stats_query (Placeholder) returns (NodeStats) {}
+}
+
+message SystemStats {
+  int32 health = 1;
+}
+
+message NodeStats {
+  int32 health = 1;
+}
+
+
+/* fault injection */
+
+service FaultInjection {
+  rpc inject_fault (Fault) returns (Stat) {} 
+} 
+
+enum FaultType {
+  BLOCK = 0;
+  DEVICE = 1;
+  NODE = 2;
+}
+
+message Fault {
+  FaultType fault = 1;
+}

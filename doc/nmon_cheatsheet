@@ -1,0 +1,22 @@
+apt install nmon
+
+# 2s intervel, 10 snapshots in total
+nmon -f -s 2 -c 10
+
+# create a *.dat file
+<Disk group name> sda sdb <disk>
+e.g., EC-group sda sdb
+
+# use collective mode to collect 
+nmon -f  -s 2 -c 700 -g nmon_disk_group.dat
+# can also add it to workload
+
+# use pyNmonAnalyzer to convert to csv
+pip install pyNmonAnalyzer
+pyNmonAnalyzer -c -o <directory> -i mai-08_230328_0526.nmo
+# e.g. Q1/E1-single-encoding
+
+# The write io file is DGWRITE.csv, read is DGREAD.csv
+
+# preprocess repair.bdwt
+grep -r recovery repair.bdwt > preprocessed.bdwt

@@ -1,0 +1,9 @@
+apt install nvme-cli
+modprobe nvme-fabrics
+nvme discover -t tcp -a 192.168.1.7 -s 4420
+nvme connect -t tcp -n nvmet-0 -a 192.168.1.7 -s 4420
+nvme disconnect -n nvmet-0
+
+
+nvme discover -t tcp -a 10.24.86.175 -s 4420
+nvme connect -t tcp -a 10.24.86.175 -s 4420 -n nvmet-0

@@ -1,0 +1,50 @@
+# Jerasure reed_sol_van (k,m)=(5+2) 
+ceph osd erasure-code-profile set Jerasure-5-2-4MB k=5 m=2 crush-failure-domain=osd plugin=jerasure technique=reed_sol_van crush-device-class=ssd stripe_unit=4096K
+
+# Jerasure reed_sol_van (k,m)=(7+2) 
+ceph osd erasure-code-profile set Jerasure-7-2-4MB k=7 m=2 crush-failure-domain=osd plugin=jerasure technique=reed_sol_van crush-device-class=ssd stripe_unit=4096K
+
+# Jerasure reed_sol_van (k,m)=(7+2) 
+ceph osd erasure-code-profile set Jerasure-7-2-64MB k=7 m=2 crush-failure-domain=osd plugin=jerasure technique=reed_sol_van crush-device-class=ssd stripe_unit=65536K
+
+
+# Jerasure reed_sol_van (k,m)=(7+2) 
+ceph osd erasure-code-profile set Jerasure-7-2-16MB k=7 m=2 crush-failure-domain=osd plugin=jerasure technique=reed_sol_van crush-device-class=ssd stripe_unit=16384K
+
+# Jerasure reed_sol_van (k,m)=(9+3) 
+ceph osd erasure-code-profile set Jerasure-9-3-4MB k=9 m=3 crush-failure-domain=osd plugin=jerasure technique=reed_sol_van crush-device-class=ssd stripe_unit=4096K
+
+# Jerasure reed_sol_van (k,m)=(7+2) 
+ceph osd erasure-code-profile set Jerasure-7-2-1MB k=7 m=2 crush-failure-domain=osd plugin=jerasure technique=reed_sol_van crush-device-class=ssd stripe_unit=1024K
+
+# Clay (k,m,d)=(7,2,8) 
+ceph osd erasure-code-profile set Clay-7-2-8-4MB k=7 m=2 d=8 crush-failure-domain=osd plugin=clay technique=reed_sol_van crush-device-class=ssd stripe_unit=4096K
+
+# Clay (k,m,d)=(9,3,10) 
+osd erasure-code-profile set Clay-9-3-10-4MB k=9 m=3 d=10 crush-failure-domain=osd plugin=clay technique=reed_sol_van crush-device-class=ssd stripe_unit=4096K
+
+ceph osd erasure-code-profile set Jerasure-5-2-4KB k=5 m=2 crush-failure-domain=osd plugin=jerasure technique=reed_sol_van crush-device-class=ssd stripe_unit=4K
+
+
+ceph osd erasure-code-profile set Jerasure-2-2-4KB k=2 m=2 crush-failure-domain=osd plugin=jerasure technique=reed_sol_van crush-device-class=ssd stripe_unit=4K
+
+ceph osd erasure-code-profile set Jerasure-2-1-4KB k=2 m=1 crush-failure-domain=osd plugin=jerasure technique=reed_sol_van crush-device-class=ssd stripe_unit=4K
+
+# Create ecpool with 128 pgs
+ceph osd pool create ecpool 128 erasure Jerasure-7-2-4MB
+
+
+# Create ecpool with single pg
+ceph osd pool create ecpool erasure Jerasure-7-2-4MB
+
+# Enable autoscale
+ceph osd pool set ecpool pg_autoscale_mode on
+
+# Check autoscale status
+ceph osd pool autoscale-status
+
+
+
+ceph osd pool create ecpool 256 erasure Jerasure-7-2-4MB
+
+ceph osd pool create ecpool 256 erasure Clay-9-3-10-4MB
