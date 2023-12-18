@@ -18,6 +18,10 @@ ceph osd erasure-code-profile set LRC-14-8-4-4MB k=8 m=4 l=4 crush-failure-domai
 ## LRC (n,k,l)=(18,12,6) 
 ceph osd erasure-code-profile set LRC-16-12-15-4MB k=12 m=4 l=6 crush-failure-domain=host plugin=clay technique=reed_sol_van crush-device-class=ssd stripe_unit=4096K
 
+
+ceph osd erasure-code-profile set Jerasure-2-1-256KB k=2 m=1 crush-failure-domain=host plugin=jerasure technique=reed_sol_van crush-device-class=hdd stripe_unit=256K
+
+
 ## Create ecpool with 256 pgs based on EC profile
 ceph osd pool create ecpool 256 erasure <Jerasure-7-2-4MB>
 

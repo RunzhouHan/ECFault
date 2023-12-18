@@ -124,4 +124,26 @@ rbd map img -p meta
 rbd device unmap rbd/img
 rbd remove img -p meta
 
+# check ceph dout logs
+systemctl --type=service --state=running | grep ceph
+journalctl -u service@id  [> /log/path]
+
+# set ceph dout level
+ceph tell mon config set debug_mon 10
+ceph tell mgr config set debug_mgr 10
+ceph tell osd.* config set debug_osd 10
+
+# clean up ceph cluster
+1. delete pools
+2. remove osds and stop osd services on mgr
+3. wipe osds on each osd node
+3. stop mon/mgr services
+4. remove /etc/ceph/*
+
+# have osd start recovery right away
+ceph tell osd.* debug kick_recovery_wq 0
+
+# Configure Ceph tick period
+ceph config set mds mds_tick_interval 2
+
 
