@@ -28,10 +28,11 @@ ceph osd erasure-code-profile set Jerasure-5-2-4KB k=5 m=2 crush-failure-domain=
 
 ceph osd erasure-code-profile set Jerasure-2-2-4KB k=2 m=2 crush-failure-domain=osd plugin=jerasure technique=reed_sol_van crush-device-class=ssd stripe_unit=4K
 
-ceph osd erasure-code-profile set Jerasure-2-1-4KB k=2 m=1 crush-failure-domain=osd plugin=jerasure technique=reed_sol_van crush-device-class=ssd stripe_unit=4K
+ceph osd erasure-code-profile set Jerasure-2-1-4KB k=2 m=1 crush-failure-domain=osd plugin=jerasure technique=reed_sol_van crush-device-class=hdd stripe_unit=4K
 
 # Create ecpool with 128 pgs
 ceph osd pool create ecpool 128 erasure Jerasure-7-2-4MB
+ceph osd pool create ecpool 32 erasure Jerasure-2-1-4KB
 
 
 # Create ecpool with single pg
